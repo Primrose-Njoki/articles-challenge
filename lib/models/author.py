@@ -1,6 +1,5 @@
 from lib.db.connection import get_connection
 from lib.models.article import Article
-from lib.models.magazine import Magazine
 
 class Author:
     def __init__(self, id, name):
@@ -31,6 +30,7 @@ class Author:
         return [Article(row["id"], row["title"], row["author_id"], row["magazine_id"]) for row in rows]
 
     def magazines(self):
+        from lib.models.magazine import Magazine
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -45,4 +45,4 @@ class Author:
         return Article.create(title, self.id, magazine.id)
 
     def topic_areas(self):
-        return list({mag.category for mag in self.magazines()})
+        return list({mag.category for mag in self.magazines()})  

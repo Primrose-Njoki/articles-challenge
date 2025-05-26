@@ -1,6 +1,5 @@
 from lib.db.connection import get_connection
 from lib.models.article import Article
-from lib.models.author import Author
 
 class Magazine:
     def __init__(self, id, name, category):
@@ -32,10 +31,12 @@ class Magazine:
         return [Article(row["id"], row["title"], row["author_id"], row["magazine_id"]) for row in rows]
 
     def contributors(self):
+        from lib.models.author import Author  
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT DISTINCT a.* FROM authors a
+            SELECT DISTINCT a.id, a.name
+            FROM authors a
             JOIN articles ar ON a.id = ar.author_id
             WHERE ar.magazine_id = ?
         """, (self.id,))
@@ -46,14 +47,16 @@ class Magazine:
         return [article.title for article in self.articles()]
 
     def contributing_authors(self):
+        from lib.models.author import Author  
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT a.*, COUNT(*) as count FROM authors a
+            SELECT a.id, a.name
+            FROM authors a
             JOIN articles ar ON a.id = ar.author_id
             WHERE ar.magazine_id = ?
             GROUP BY a.id
-            HAVING COUNT(*) > 2
+            HAVING COUNT(ar.id) > 2
         """, (self.id,))
         rows = cursor.fetchall()
         return [Author(row["id"], row["name"]) for row in rows]
